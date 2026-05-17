@@ -1,32 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Zap } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Logo from './Logo';
 
 const links = [
   { href: '/', label: 'Home' },
   { href: '/emulator', label: 'Emulator' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/docs', label: 'Docs' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/contact', label: 'Contact' },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handler);
+    return () => window.removeEventListener('scroll', handler);
+  }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-surface/80 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-6 flex items-center justify-between h-16">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded-lg bg-cyan/10 border border-cyan/30 flex items-center justify-center group-hover:bg-cyan/20 transition-colors">
-            <Zap size={14} className="text-cyan" />
-          </div>
-          <span className="font-semibold text-light tracking-tight">Lusentinel</span>
-          <span className="text-[10px] font-mono text-cyan/70 border border-cyan/20 px-1.5 py-0.5 rounded-md bg-cyan/5">v1.0</span>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-[#080808]/90 backdrop-blur-xl border-b border-[rgba(255,255,255,0.06)]'
+          : 'bg-transparent'
+      }`}
+    >
+      <div className="mx-auto max-w-6xl px-6 flex items-center justify-between h-16">
+        <Link href="/" className="flex items-center gap-3 group">
+          <Logo size={28} />
+          <span className="font-semibold text-white text-base tracking-tight">Lusentinel</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
@@ -36,10 +48,8 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  active
-                    ? 'text-cyan bg-cyan/10 border border-cyan/20'
-                    : 'text-muted hover:text-light hover:bg-panel'
+                className={`px-4 py-2 rounded-xl text-sm transition-colors ${
+                  active ? 'text-white' : 'text-[#606060] hover:text-[#a0a0a0]'
                 }`}
               >
                 {link.label}
@@ -49,16 +59,13 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            href="/emulator"
-            className="px-4 py-2 rounded-xl text-sm font-medium bg-cyan text-base hover:bg-cyan/90 transition-colors shadow-glow-sm"
-          >
-            Launch Emulator
+          <Link href="/emulator" className="btn-primary text-sm px-5 py-2.5">
+            Launch Agent
           </Link>
         </div>
 
         <button
-          className="md:hidden p-2 rounded-lg text-muted hover:text-light hover:bg-panel transition-colors"
+          className="md:hidden p-2 text-[#606060] hover:text-white transition-colors"
           onClick={() => setOpen(!open)}
         >
           {open ? <X size={20} /> : <Menu size={20} />}
@@ -68,35 +75,30 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border bg-surface overflow-hidden"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="md:hidden border-t border-[rgba(255,255,255,0.06)] bg-[#080808]/95 backdrop-blur-xl"
           >
-            <div className="px-6 py-4 flex flex-col gap-1">
-              {links.map((link) => {
-                const active = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                      active
-                        ? 'text-cyan bg-cyan/10 border border-cyan/20'
-                        : 'text-muted hover:text-light hover:bg-panel'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
+            <div className="px-6 py-5 flex flex-col gap-1">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={`px-4 py-3 rounded-xl text-sm transition-colors ${
+                    pathname === link.href ? 'text-white bg-white/5' : 'text-[#606060] hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
               <Link
                 href="/emulator"
                 onClick={() => setOpen(false)}
-                className="mt-2 px-4 py-3 rounded-xl text-sm font-medium bg-cyan text-base text-center hover:bg-cyan/90 transition-colors"
+                className="btn-primary mt-3 justify-center"
               >
-                Launch Emulator
+                Launch Agent
               </Link>
             </div>
           </motion.div>

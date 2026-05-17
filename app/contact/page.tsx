@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Mail, Github, Twitter, CheckCircle } from 'lucide-react';
+import { Send, CheckCircle, Github, Twitter, Mail } from 'lucide-react';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -17,136 +17,95 @@ export default function ContactPage() {
     setLoading(false);
   };
 
+  const inputStyle = {
+    width: '100%', padding: '12px 16px', borderRadius: 12,
+    background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)',
+    color: '#fff', fontSize: 14, outline: 'none',
+    transition: 'border-color 0.2s',
+  };
+
   return (
-    <div className="pt-28 pb-20 px-6 min-h-screen">
-      <div className="mx-auto max-w-3xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-14"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-panel border border-border text-xs font-mono text-muted mb-6">
-            <Mail size={11} className="text-cyan" />
-            contact@lusentinel.com
-          </div>
-          <h1 className="text-4xl font-bold text-light mb-4">Get in touch</h1>
-          <p className="text-muted max-w-md mx-auto">
-            Have a question, partnership inquiry, or just want to talk about agent orchestration? We read every message.
+    <div className="pt-32 pb-24 px-6 min-h-screen">
+      <div className="mx-auto max-w-xl">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
+          <div className="mono text-[10px] tracking-[0.2em] text-[#383838] uppercase mb-4">Contact</div>
+          <h1 className="font-bold text-white mb-3" style={{ fontSize: 'clamp(28px,4vw,42px)', letterSpacing: '-0.025em' }}>Get in touch</h1>
+          <p className="text-sm" style={{ color: '#505050' }}>
+            Questions, partnerships, or enterprise inquiries — we read every message.
           </p>
         </motion.div>
 
         {submitted ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="glow-border-lime rounded-3xl bg-panel p-16 text-center"
-          >
-            <div className="w-16 h-16 rounded-full bg-lime/10 border border-lime/20 flex items-center justify-center mx-auto mb-6">
-              <CheckCircle size={28} className="text-lime" />
+          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
+            className="text-center rounded-2xl p-16" style={{ background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.15)' }}>
+              <CheckCircle size={24} style={{ color: '#22c55e' }} />
             </div>
-            <h2 className="text-2xl font-bold text-light mb-3">Message received</h2>
-            <p className="text-muted max-w-sm mx-auto">
-              We'll get back to you within 24 hours. In the meantime, check out the docs or open the emulator.
-            </p>
+            <h2 className="text-xl font-bold text-white mb-2">Message received</h2>
+            <p className="text-sm" style={{ color: '#505050' }}>We'll get back to you within 24 hours.</p>
           </motion.div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="rounded-3xl bg-panel border border-border p-8 md:p-10"
-          >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-mono text-muted uppercase tracking-widest mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Your name"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-surface border border-border text-light placeholder-muted text-sm focus:outline-none focus:border-cyan/50 focus:ring-1 focus:ring-cyan/20 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-mono text-muted uppercase tracking-widest mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-surface border border-border text-light placeholder-muted text-sm focus:outline-none focus:border-cyan/50 focus:ring-1 focus:ring-cyan/20 transition-colors"
-                  />
-                </div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            className="rounded-2xl p-8" style={{ background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { key: 'name', label: 'Full Name', placeholder: 'Your name', type: 'text' },
+                  { key: 'email', label: 'Email', placeholder: 'you@example.com', type: 'email' },
+                ].map(({ key, label, placeholder, type }) => (
+                  <div key={key}>
+                    <label className="block mono text-[9px] text-[#404040] uppercase tracking-widest mb-2">{label}</label>
+                    <input
+                      type={type} required placeholder={placeholder}
+                      value={form[key as keyof typeof form]}
+                      onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                      style={inputStyle}
+                    />
+                  </div>
+                ))}
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-muted uppercase tracking-widest mb-2">
-                  Subject
-                </label>
+                <label className="block mono text-[9px] text-[#404040] uppercase tracking-widest mb-2">Subject</label>
                 <input
-                  type="text"
-                  required
-                  placeholder="What's this about?"
+                  type="text" required placeholder="What's this about?"
                   value={form.subject}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-surface border border-border text-light placeholder-muted text-sm focus:outline-none focus:border-cyan/50 focus:ring-1 focus:ring-cyan/20 transition-colors"
+                  style={inputStyle}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-muted uppercase tracking-widest mb-2">
-                  Message
-                </label>
+                <label className="block mono text-[9px] text-[#404040] uppercase tracking-widest mb-2">Message</label>
                 <textarea
-                  required
-                  rows={6}
-                  placeholder="Tell us more..."
+                  required rows={5} placeholder="Tell us more..."
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-surface border border-border text-light placeholder-muted text-sm focus:outline-none focus:border-cyan/50 focus:ring-1 focus:ring-cyan/20 transition-colors resize-none"
+                  style={{ ...inputStyle, resize: 'none' }}
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-cyan text-base font-semibold hover:bg-cyan/90 disabled:opacity-60 transition-all shadow-glow-cyan"
-              >
+              <button type="submit" disabled={loading} className="btn-primary w-full justify-center mt-2" style={{ borderRadius: 12 }}>
                 {loading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-base/30 border-t-base rounded-full animate-spin" />
-                    Sending...
-                  </>
+                  <><div style={{ width: 14, height: 14, border: '2px solid rgba(0,0,0,0.2)', borderTopColor: '#000', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Sending...</>
                 ) : (
-                  <>
-                    <Send size={16} />
-                    Send Message
-                  </>
+                  <><Send size={14} /> Send Message</>
                 )}
               </button>
             </form>
 
-            <div className="mt-10 pt-8 border-t border-border flex items-center justify-center gap-6">
-              <a href="https://github.com/yusufsafary" target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted hover:text-light transition-colors">
-                <Github size={14} />
-                GitHub
-              </a>
-              <a href="#" className="flex items-center gap-2 text-sm text-muted hover:text-light transition-colors">
-                <Twitter size={14} />
-                Twitter
-              </a>
-              <a href="mailto:contact@lusentinel.com" className="flex items-center gap-2 text-sm text-muted hover:text-light transition-colors">
-                <Mail size={14} />
-                Email
-              </a>
+            <div className="mt-8 pt-6 border-t flex justify-center gap-6" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+              {[
+                { icon: Github, label: 'GitHub', href: 'https://github.com/yusufsafary' },
+                { icon: Twitter, label: 'Twitter', href: '#' },
+                { icon: Mail, label: 'Email', href: 'mailto:contact@lusentinel.com' },
+              ].map(({ icon: Icon, label, href }) => (
+                <a key={label} href={href} className="flex items-center gap-1.5 text-xs transition-colors" style={{ color: '#404040' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#a0a0a0')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#404040')}>
+                  <Icon size={13} /> {label}
+                </a>
+              ))}
             </div>
           </motion.div>
         )}

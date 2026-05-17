@@ -37,18 +37,15 @@ const LOG_POOLS = {
     'Memory pressure rising — GC triggered',
     'Retry budget at 40% — monitoring closely',
     'Rate limit approaching on external channel',
-    'Context drift detected — recalibrating baseline',
   ],
   ERROR: [
     'Agent[gamma] timeout — fallback chain activated',
     'External API unreachable — using cached state',
-    'Validation failure in stage[normalize] — skipping',
   ],
   OK: [
     'All agents nominal — next cycle in 1500ms',
     'Execution chain committed — 7 steps, 0 failures',
     'Agent[alpha] completed — 412ms total duration',
-    'State sync verified across 5 replicas',
   ],
 };
 
@@ -58,44 +55,37 @@ interface LogLine {
   id: number;
   time: string;
   level: LogLevel;
-  agent?: string;
   message: string;
 }
 
 function getTime() {
-  return new Date().toLocaleTimeString('en-US', {
-    hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }) + '.' + String(Date.now() % 1000).padStart(3, '0');
+  return new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) + '.' + String(Date.now() % 1000).padStart(3, '0');
 }
 
-function randomFrom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+function randomFrom<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function generateLog(id: number): LogLine {
   const levels: LogLevel[] = ['INFO', 'EXEC', 'EXEC', 'INFO', 'WARN', 'OK', 'INFO', 'EXEC'];
   const level = randomFrom(levels);
-  const pool = LOG_POOLS[level];
-  return {
-    id,
-    time: getTime(),
-    level,
-    message: randomFrom(pool),
-  };
+  return { id, time: getTime(), level, message: randomFrom(LOG_POOLS[level]) };
 }
 
 const levelColors: Record<LogLevel, string> = {
-  INFO: 'text-muted',
-  EXEC: 'text-cyan',
-  WARN: 'text-yellow-400',
-  ERROR: 'text-red-400',
-  OK: 'text-lime',
+  INFO: '#505050',
+  EXEC: '#3B82F6',
+  WARN: '#f59e0b',
+  ERROR: '#ef4444',
+  OK: '#22c55e',
 };
 
 const TABS = ['Terminal', 'Logs', 'Chain', 'Flow'];
+
+const TabIcon = ({ tab }: { tab: string }) => {
+  if (tab === 'Terminal') return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" /></svg>;
+  if (tab === 'Logs') return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>;
+  if (tab === 'Chain') return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" /></svg>;
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>;
+};
 
 export default function TerminalEmulator() {
   const [running, setRunning] = useState(false);
@@ -109,144 +99,126 @@ export default function TerminalEmulator() {
   const addLog = useCallback(() => {
     setLogId((prev) => {
       const id = prev + 1;
-      const log = generateLog(id);
-      setLogs((l) => [...l.slice(-200), log]);
+      setLogs((l) => [...l.slice(-200), generateLog(id)]);
       return id;
     });
   }, []);
 
   useEffect(() => {
-    if (running) {
-      intervalRef.current = setInterval(addLog, 1500);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    if (running) { intervalRef.current = setInterval(addLog, 1500); }
+    else { if (intervalRef.current) clearInterval(intervalRef.current); }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [running, addLog]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [logs]);
 
-  const handleReset = () => {
-    setRunning(false);
-    setLogs([]);
-    setLogId(0);
-  };
+  const handleReset = () => { setRunning(false); setLogs([]); setLogId(0); };
 
   const exportLogs = () => {
     const text = logs.map((l) => `[${l.time}] ${l.level.padEnd(5)} ${l.message}`).join('\n');
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'sentinel-logs.txt';
-    a.click();
+    a.href = url; a.download = 'sentinel-logs.txt'; a.click();
   };
 
   return (
-    <div className="flex h-full gap-0 overflow-hidden rounded-3xl border border-border bg-surface">
-      <aside className="w-56 shrink-0 border-r border-border bg-panel flex flex-col">
-        <div className="px-4 py-4 border-b border-border">
-          <div className="text-[10px] font-mono text-muted uppercase tracking-widest mb-3">Sentinel Agents</div>
+    <div className="flex h-full overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0d0d0d]">
+      {/* Sidebar */}
+      <aside className="w-52 shrink-0 border-r border-[rgba(255,255,255,0.06)] flex flex-col">
+        <div className="px-4 py-4 border-b border-[rgba(255,255,255,0.06)]">
+          <div className="mono text-[9px] text-[#383838] uppercase tracking-[0.18em]">Sentinel Agents</div>
         </div>
-        <div className="flex-1 overflow-y-auto py-2">
+        <div className="flex-1 overflow-y-auto py-1">
           {AGENTS.map((agent) => {
             const active = activeAgent.id === agent.id;
             return (
               <button
                 key={agent.id}
                 onClick={() => setActiveAgent(agent)}
-                className={`w-full text-left px-4 py-3 flex flex-col gap-1 transition-colors ${
-                  active ? 'bg-cyan/5 border-l-2 border-cyan' : 'border-l-2 border-transparent hover:bg-white/3'
-                }`}
+                className="w-full text-left px-4 py-3 flex flex-col gap-1 transition-colors hover:bg-[rgba(255,255,255,0.02)]"
+                style={{ borderLeft: active ? '2px solid #3B82F6' : '2px solid transparent' }}
               >
                 <div className="flex items-center justify-between">
-                  <span className={`text-sm font-medium ${active ? 'text-cyan' : 'text-light'}`}>
+                  <span className="text-sm font-medium" style={{ color: active ? '#fff' : '#505050' }}>
                     {agent.name}
                   </span>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                    agent.status === 'RUNNING'
-                      ? 'bg-lime/10 text-lime border border-lime/20'
-                      : 'bg-cyan/10 text-cyan border border-cyan/20'
-                  }`}>
+                  <span className="mono text-[9px] px-1.5 py-0.5 rounded" style={{
+                    background: agent.status === 'RUNNING' ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.05)',
+                    color: agent.status === 'RUNNING' ? '#22c55e' : '#404040',
+                    border: agent.status === 'RUNNING' ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(255,255,255,0.06)',
+                  }}>
                     {agent.status}
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-muted truncate">{agent.task}</span>
+                <span className="mono text-[9px] text-[#383838] truncate">{agent.task}</span>
               </button>
             );
           })}
         </div>
       </aside>
 
+      {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+        {/* Header */}
+        <div className="px-5 py-3 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div>
-              <div className="text-sm font-semibold text-light">{activeAgent.name}</div>
-              <div className="text-xs font-mono text-muted">{activeAgent.task}</div>
+              <div className="text-sm font-semibold text-white">{activeAgent.name}</div>
+              <div className="mono text-[10px] text-[#404040]">{activeAgent.task}</div>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${running ? 'bg-lime animate-pulse' : 'bg-border'}`} />
-              <span className="text-xs font-mono text-muted">{running ? 'EXECUTING' : 'IDLE'}</span>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: running ? '#22c55e' : '#282828', boxShadow: running ? '0 0 6px rgba(34,197,94,0.5)' : 'none', display: 'block' }} />
+              <span className="mono text-[9px] text-[#404040]">{running ? 'EXECUTING' : 'IDLE'}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={exportLogs}
-              disabled={logs.length === 0}
-              className="p-2 rounded-lg text-muted hover:text-light hover:bg-white/5 disabled:opacity-30 transition-colors"
-            >
-              <Download size={14} />
+            <button onClick={exportLogs} disabled={logs.length === 0} className="p-1.5 rounded-lg text-[#383838] hover:text-[#606060] disabled:opacity-20 transition-colors">
+              <Download size={13} />
             </button>
-            <button
-              onClick={handleReset}
-              className="p-2 rounded-lg text-muted hover:text-light hover:bg-white/5 transition-colors"
-            >
-              <RotateCcw size={14} />
+            <button onClick={handleReset} className="p-1.5 rounded-lg text-[#383838] hover:text-[#606060] transition-colors">
+              <RotateCcw size={13} />
             </button>
             <button
               onClick={() => setRunning(!running)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                running
-                  ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
-                  : 'bg-cyan text-base hover:bg-cyan/90 shadow-glow-sm'
-              }`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={running ? {
+                background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)'
+              } : {
+                background: '#fff', color: '#000'
+              }}
             >
-              {running ? <Square size={13} /> : <Play size={13} />}
+              {running ? <Square size={11} /> : <Play size={11} />}
               {running ? 'Stop' : 'Run Simulation'}
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-0 border-b border-border px-5">
+        {/* Tabs */}
+        <div className="flex border-b border-[rgba(255,255,255,0.06)] px-5">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-3 text-xs font-medium transition-colors border-b-2 -mb-px ${
-                activeTab === tab
-                  ? 'text-cyan border-cyan'
-                  : 'text-muted border-transparent hover:text-light'
-              }`}
+              className="flex items-center gap-2 px-3 py-3 text-xs font-medium transition-colors border-b-2 -mb-px"
+              style={activeTab === tab ? { color: '#fff', borderColor: '#fff' } : { color: '#404040', borderColor: 'transparent' }}
             >
+              <TabIcon tab={tab} />
               {tab}
             </button>
           ))}
         </div>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 font-mono text-xs leading-relaxed">
+        {/* Content */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 mono text-xs leading-relaxed">
           {activeTab === 'Terminal' && (
             <div>
               {logs.length === 0 && !running && (
-                <div className="text-muted text-center mt-12">
-                  Press <span className="text-cyan">Run Simulation</span> to begin agent execution
+                <div className="text-center mt-12" style={{ color: '#303030' }}>
+                  Press <span style={{ color: '#3B82F6' }}>Run Simulation</span> to begin
                 </div>
               )}
               <AnimatePresence initial={false}>
@@ -258,18 +230,16 @@ export default function TerminalEmulator() {
                     transition={{ duration: 0.2 }}
                     className="flex gap-3 py-0.5"
                   >
-                    <span className="text-muted shrink-0 select-none">{log.time}</span>
-                    <span className={`shrink-0 w-11 text-right ${levelColors[log.level]}`}>
-                      {log.level}
-                    </span>
-                    <span className="text-light/80">{log.message}</span>
+                    <span style={{ color: '#303030' }} className="shrink-0">{log.time}</span>
+                    <span className="shrink-0 w-10 text-right" style={{ color: levelColors[log.level] }}>{log.level}</span>
+                    <span style={{ color: '#808080' }}>{log.message}</span>
                   </motion.div>
                 ))}
               </AnimatePresence>
               {running && (
                 <div className="flex gap-3 py-0.5 mt-1">
-                  <span className="text-muted shrink-0 select-none">{getTime()}</span>
-                  <span className="text-cyan cursor-blink">█</span>
+                  <span style={{ color: '#303030' }} className="shrink-0">{getTime()}</span>
+                  <span style={{ color: '#3B82F6' }} className="cursor">█</span>
                 </div>
               )}
             </div>
@@ -277,22 +247,20 @@ export default function TerminalEmulator() {
 
           {activeTab === 'Logs' && (
             <div>
-              {['INFO', 'EXEC', 'WARN', 'ERROR', 'OK'].map((level) => {
+              {(['EXEC', 'INFO', 'WARN', 'ERROR', 'OK'] as LogLevel[]).map((level) => {
                 const filtered = logs.filter((l) => l.level === level);
                 return (
                   <div key={level} className="mb-6">
-                    <div className={`text-[10px] font-semibold uppercase tracking-widest mb-2 ${levelColors[level as LogLevel]}`}>
+                    <div className="text-[9px] font-semibold uppercase tracking-widest mb-2" style={{ color: levelColors[level] }}>
                       {level} ({filtered.length})
                     </div>
-                    {filtered.slice(-10).map((log) => (
+                    {filtered.slice(-8).map((log) => (
                       <div key={log.id} className="flex gap-3 py-0.5">
-                        <span className="text-muted shrink-0">{log.time}</span>
-                        <span className="text-light/70">{log.message}</span>
+                        <span style={{ color: '#303030' }}>{log.time}</span>
+                        <span style={{ color: '#606060' }}>{log.message}</span>
                       </div>
                     ))}
-                    {filtered.length === 0 && (
-                      <div className="text-muted/50">No {level} logs yet</div>
-                    )}
+                    {filtered.length === 0 && <div style={{ color: '#282828' }}>No {level} logs yet</div>}
                   </div>
                 );
               })}
@@ -300,19 +268,19 @@ export default function TerminalEmulator() {
           )}
 
           {activeTab === 'Chain' && (
-            <div className="space-y-3 py-4">
-              <div className="text-muted mb-6">Execution chain for: <span className="text-cyan">{activeAgent.task}</span></div>
+            <div className="py-4">
+              <div style={{ color: '#404040' }} className="mb-6">
+                Chain for: <span style={{ color: '#3B82F6' }}>{activeAgent.task}</span>
+              </div>
               {['fetch_context', 'normalize_input', 'rank_signals', 'emit_output', 'commit_state'].map((step, i) => (
-                <div key={step} className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold ${
-                    running && i <= (logs.length % 5) ? 'bg-lime/10 text-lime border border-lime/20' : 'bg-panel border border-border text-muted'
-                  }`}>
+                <div key={step} className="flex items-center gap-3 mb-3">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[9px] font-bold"
+                    style={{ background: running && i <= (logs.length % 5) ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)', border: running && i <= (logs.length % 5) ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(255,255,255,0.06)', color: running && i <= (logs.length % 5) ? '#22c55e' : '#404040' }}>
                     {i + 1}
                   </div>
-                  <div className="flex-1 h-px bg-border" />
-                  <div className={`px-3 py-1.5 rounded-lg border text-[11px] ${
-                    running && i <= (logs.length % 5) ? 'border-lime/20 bg-lime/5 text-lime' : 'border-border bg-panel text-muted'
-                  }`}>
+                  <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                  <div className="px-3 py-1.5 rounded-lg text-[10px]"
+                    style={{ border: running && i <= (logs.length % 5) ? '1px solid rgba(34,197,94,0.15)' : '1px solid rgba(255,255,255,0.06)', background: running && i <= (logs.length % 5) ? 'rgba(34,197,94,0.05)' : 'rgba(255,255,255,0.02)', color: running && i <= (logs.length % 5) ? '#22c55e' : '#404040' }}>
                     {step}
                   </div>
                 </div>
@@ -322,22 +290,19 @@ export default function TerminalEmulator() {
 
           {activeTab === 'Flow' && (
             <div className="py-4">
-              <div className="text-muted mb-6">Agent dependency flow</div>
-              <div className="grid grid-cols-2 gap-4">
+              <div style={{ color: '#404040' }} className="mb-5">Agent dependency flow</div>
+              <div className="grid grid-cols-2 gap-3">
                 {AGENTS.map((agent) => (
-                  <div key={agent.id} className="rounded-xl border border-border bg-panel p-4">
+                  <div key={agent.id} className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-light font-medium">{agent.name}</span>
-                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                        agent.status === 'RUNNING'
-                          ? 'bg-lime/10 text-lime border border-lime/20'
-                          : 'bg-cyan/10 text-cyan border border-cyan/20'
-                      }`}>{agent.status}</span>
+                      <span className="text-sm text-white font-medium">{agent.name}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: agent.status === 'RUNNING' ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.05)', color: agent.status === 'RUNNING' ? '#22c55e' : '#404040' }}>{agent.status}</span>
                     </div>
-                    <div className="text-[10px] font-mono text-muted">{agent.task}</div>
-                    <div className="mt-3 h-1 rounded-full bg-border overflow-hidden">
+                    <div className="text-[9px] text-[#383838]">{agent.task}</div>
+                    <div className="mt-3 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
                       <motion.div
-                        className="h-full bg-cyan"
+                        className="h-full rounded-full"
+                        style={{ background: '#3B82F6' }}
                         animate={{ width: running ? `${30 + (agent.id.charCodeAt(0) * 13) % 60}%` : '0%' }}
                         transition={{ duration: 1, ease: 'easeInOut' }}
                       />

@@ -8,42 +8,37 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        base: '#0E0E0F',
-        surface: '#121214',
-        panel: '#1A1A1C',
-        border: '#2A2A2E',
-        cyan: '#00E5FF',
-        lime: '#9EFF00',
-        muted: '#6B6B7A',
-        light: '#E2E2E8',
+        bg: '#080808',
+        surface: '#0f0f0f',
+        panel: '#141414',
+        card: '#111111',
+        'border-soft': 'rgba(255,255,255,0.07)',
+        'border-strong': 'rgba(255,255,255,0.12)',
+        accent: '#3B82F6',
+        'gray-1': '#e8e8e8',
+        'gray-2': '#a0a0a0',
+        'gray-3': '#606060',
+        'gray-4': '#303030',
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-geist-mono)', 'JetBrains Mono', 'monospace'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
       },
-      borderRadius: {
-        xl: '1rem',
-        '2xl': '1.25rem',
-        '3xl': '1.5rem',
-      },
-      boxShadow: {
-        'glow-cyan': '0 0 20px rgba(0, 229, 255, 0.15)',
-        'glow-lime': '0 0 20px rgba(158, 255, 0, 0.15)',
-        'glow-sm': '0 0 8px rgba(0, 229, 255, 0.1)',
+      fontSize: {
+        'display-xl': ['72px', { lineHeight: '1.05', letterSpacing: '-0.03em' }],
+        'display-lg': ['56px', { lineHeight: '1.08', letterSpacing: '-0.025em' }],
+        'display-md': ['40px', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+        'display-sm': ['28px', { lineHeight: '1.2', letterSpacing: '-0.015em' }],
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'fade-in': 'fadeIn 0.5s ease-out forwards',
-        'slide-up': 'slideUp 0.5s ease-out forwards',
+        'spin-slow': 'spin 20s linear infinite',
+        'pulse-slow': 'pulse 4s ease-in-out infinite',
+        'float': 'float 6s ease-in-out infinite',
       },
       keyframes: {
-        fadeIn: {
-          from: { opacity: '0' },
-          to: { opacity: '1' },
-        },
-        slideUp: {
-          from: { opacity: '0', transform: 'translateY(16px)' },
-          to: { opacity: '1', transform: 'translateY(0)' },
+        float: {
+          '0%,100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
         },
       },
     },

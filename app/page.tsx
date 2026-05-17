@@ -2,26 +2,39 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Cpu, GitBranch, Shield, Terminal, Activity, Layers } from 'lucide-react';
+import { ArrowRight, Layers, GitBranch, Eye, Zap, Shield, RefreshCw } from 'lucide-react';
+import PartnerLogos from '@/components/PartnerLogos';
 
 const features = [
   {
-    icon: Cpu,
-    title: 'Precision Execution',
-    description: 'Every agent runs with deterministic scheduling and fail-safe fallback chains. No missed cycles, no silent failures.',
-    accent: 'cyan',
+    icon: Layers,
+    title: 'Multi-Step Execution',
+    body: 'Complex, conditional strategies broken into ordered tasks — each handled by a specialist sub-agent. Plan, validate, execute.',
+  },
+  {
+    icon: Eye,
+    title: 'Full Observability',
+    body: 'Every agent decision is logged, traced, and queryable. You see exactly what ran, when, and why — no black boxes.',
   },
   {
     icon: GitBranch,
-    title: 'Multi-Agent Orchestration',
-    description: 'Chain agents across execution contexts with shared memory, dependency graphs, and real-time coordination.',
-    accent: 'lime',
+    title: 'Chain Orchestration',
+    body: 'Agents share context, resolve dependencies, and run parallel branches. The engine coordinates everything automatically.',
+  },
+  {
+    icon: RefreshCw,
+    title: 'Deterministic Retry',
+    body: 'Built-in retry budgets, exponential backoff, and fallback chains. Every failure has a defined recovery path.',
+  },
+  {
+    icon: Zap,
+    title: 'Sub-2ms Dispatch',
+    body: 'Engineered for low-latency scheduling. Agents receive tasks in under two milliseconds from trigger to execution.',
   },
   {
     icon: Shield,
-    title: 'Full Observability',
-    description: 'Live log streams, execution traces, and chain flow visualization give you complete runtime transparency.',
-    accent: 'cyan',
+    title: 'Execution Safety',
+    body: 'Input validation, output contracts, and sandboxed contexts. Each agent runs in a controlled, auditable scope.',
   },
 ];
 
@@ -32,187 +45,145 @@ const stats = [
   { value: '128', label: 'Concurrent agents' },
 ];
 
+function fade(delay = 0) {
+  return {
+    initial: { opacity: 0, y: 24 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.55, delay, ease: [0.25, 0.1, 0.25, 1] },
+  };
+}
+
 export default function HomePage() {
   return (
-    <div className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(0,229,255,0.06),transparent)] pointer-events-none" />
+    <div className="relative">
+      {/* Radial glow */}
+      <div className="pointer-events-none fixed inset-0 z-0" style={{
+        background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.04) 0%, transparent 60%)'
+      }} />
 
-      <section className="relative pt-32 pb-24 px-6">
-        <div className="mx-auto max-w-5xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-panel border border-border text-xs font-mono text-cyan mb-8"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-lime animate-pulse" />
-            Sentinel Engine v1.0 — Now Live
+      {/* ─── HERO ─── */}
+      <section className="relative z-10 pt-36 pb-24 px-6 text-center">
+        <div className="mx-auto max-w-3xl">
+          <motion.div {...fade(0)} className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-xs text-[#606060] mono">
+            <span className="glow-dot" style={{ width: 5, height: 5 }} />
+            Sentinel Engine v1.0 — Now in Production
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold tracking-tight text-light leading-none mb-6"
-          >
-            The precision
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan to-cyan/60">
-              agent engine.
-            </span>
+          <motion.h1 {...fade(0.1)} className="font-bold text-white mb-6" style={{ fontSize: 'clamp(42px, 8vw, 72px)', lineHeight: 1.06, letterSpacing: '-0.03em' }}>
+            Your Strategy.{' '}
+            <span style={{ color: '#505050' }}>Running</span>{' '}
+            <span style={{ color: '#a0a0a0' }}>24/7.</span>
           </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg text-muted max-w-2xl mx-auto mb-10 leading-relaxed"
-          >
-            Lusentinel orchestrates intelligent agents at scale — with real-time execution monitoring,
-            deterministic scheduling, and full chain observability built in from the start.
+          <motion.p {...fade(0.18)} className="text-base md:text-lg mb-10 leading-relaxed mx-auto max-w-xl" style={{ color: '#606060' }}>
+            Lusentinel is the precision agent engine that decomposes complex strategies into ordered tasks, sources live data for each one, and executes with full auditability. Not a dashboard. Not a bot. An engine.
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Link
-              href="/emulator"
-              className="group inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-cyan text-base font-semibold text-sm hover:bg-cyan/90 transition-all shadow-glow-cyan"
-            >
-              Open Emulator
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          <motion.div {...fade(0.26)} className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/emulator" className="btn-primary">
+              Deploy Your Strategy
+              <ArrowRight size={15} />
             </Link>
-            <Link
-              href="/docs"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-panel border border-border text-light font-medium text-sm hover:border-cyan/30 hover:text-cyan transition-all"
-            >
+            <Link href="/docs" className="btn-ghost">
               Read the docs
             </Link>
           </motion.div>
         </div>
 
+        {/* Terminal preview card */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="mx-auto max-w-4xl mt-20"
+          transition={{ duration: 0.7, delay: 0.4 }}
+          className="mx-auto max-w-2xl mt-16 float"
         >
-          <div className="rounded-3xl border border-border bg-surface overflow-hidden shadow-2xl">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-panel">
-              <div className="w-3 h-3 rounded-full bg-red-500/60" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-              <div className="w-3 h-3 rounded-full bg-lime/60" />
-              <span className="ml-3 text-xs font-mono text-muted">sentinel-core / execution-monitor</span>
-            </div>
-            <div className="p-6 font-mono text-sm leading-relaxed">
-              <div className="flex flex-col gap-2">
+          <div className="rounded-2xl overflow-hidden border border-[rgba(255,255,255,0.08)] bg-[#0d0d0d]">
+            {/* Tab bar */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(255,255,255,0.06)]">
+              <div className="flex items-center gap-3">
                 {[
-                  { time: '09:14:32.001', level: 'INFO', msg: 'SentinelCore initialized — 4 agents registered' },
-                  { time: '09:14:32.112', level: 'EXEC', msg: 'Agent[alpha] dispatched — task: market_scan_v2' },
-                  { time: '09:14:32.445', level: 'INFO', msg: 'Chain[0x8a2f] resolved — 3 nodes, 0 errors' },
-                  { time: '09:14:33.021', level: 'EXEC', msg: 'Agent[beta] dispatched — task: portfolio_rebalance' },
-                  { time: '09:14:33.388', level: 'WARN', msg: 'Agent[gamma] — latency spike detected (480ms)' },
-                  { time: '09:14:33.500', level: 'INFO', msg: 'Fallback chain activated — rerouting to agent[delta]' },
-                  { time: '09:14:34.002', level: 'EXEC', msg: 'Agent[delta] dispatched — inheriting gamma context' },
-                  { time: '09:14:34.210', level: 'OK  ', msg: 'All agents nominal — next cycle in 1500ms' },
-                ].map((line, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 + i * 0.1 }}
-                    className="flex gap-3"
-                  >
-                    <span className="text-muted shrink-0">{line.time}</span>
-                    <span className={`shrink-0 w-10 text-right ${
-                      line.level === 'EXEC' ? 'text-cyan' :
-                      line.level === 'WARN' ? 'text-yellow-400' :
-                      line.level === 'OK  ' ? 'text-lime' : 'text-muted'
-                    }`}>{line.level}</span>
-                    <span className="text-light/80">{line.msg}</span>
-                  </motion.div>
+                  <svg key="t" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" /></svg>,
+                  <svg key="l" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>,
+                  <svg key="c" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" /></svg>,
+                  <svg key="g" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>,
+                ].map((icon, i) => (
+                  <div key={i} className={`p-1.5 rounded-md ${i === 0 ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-[#404040] hover:text-[#707070]'} transition-colors cursor-pointer`}>
+                    {icon}
+                  </div>
                 ))}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.5 }}
-                  className="flex gap-3 mt-1"
-                >
-                  <span className="text-muted shrink-0">09:14:34.211</span>
-                  <span className="text-cyan shrink-0 w-10 text-right">_</span>
-                  <span className="text-cyan cursor-blink">█</span>
-                </motion.div>
+              </div>
+              <span className="badge bg-[rgba(34,197,94,0.1)] text-[#22c55e] border border-[rgba(34,197,94,0.2)]">
+                EXECUTING
+              </span>
+            </div>
+
+            <div className="p-5 text-left">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="glow-dot" />
+                <span className="mono text-[10px] tracking-widest text-[#404040] uppercase">Live Agent Environment</span>
+              </div>
+
+              <div className="mb-5">
+                <div className="mono text-[10px] text-[#383838] uppercase tracking-widest mb-2">User Prompt</div>
+                <div className="rounded-xl bg-[#161616] border border-[rgba(255,255,255,0.06)] px-4 py-3 text-sm text-[#c0c0c0]">
+                  Scan Base chain for tokens with $500k–$2M MC. Check social sentiment. If &gt;80/100, buy $5 ETH.
+                </div>
+              </div>
+
+              <div>
+                <div className="mono text-[10px] text-[#383838] uppercase tracking-widest mb-3">Agent Execution Log</div>
+                <div className="space-y-2.5">
+                  {[
+                    { color: '#3B82F6', label: 'Parsing Intent: Multi-step Execution Strategy' },
+                    { color: '#606060', label: 'Step 1: Scanning Base Chain (MC: $500k–$2M)...' },
+                    { color: '#606060', label: 'Step 2: Fetching social sentiment scores...' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="mt-1.5 shrink-0" style={{ width: 5, height: 5, borderRadius: '50%', background: item.color }} />
+                      <span className="text-sm mono" style={{ color: item.color }}>{item.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </motion.div>
       </section>
 
-      <section className="py-20 px-6 border-t border-border">
-        <div className="mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="rounded-2xl bg-panel border border-border p-6 text-center"
-              >
-                <div className="text-3xl font-bold text-cyan mb-1">{stat.value}</div>
-                <div className="text-xs text-muted">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ─── POWERED BY ─── */}
+      <PartnerLogos />
 
+      {/* ─── THE DIFFERENCE ─── */}
       <section className="py-24 px-6">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-light mb-4"
-            >
-              Built for precision
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-muted max-w-lg mx-auto"
-            >
-              Every component is designed around reliability, observability, and control — not abstractions.
-            </motion.p>
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-16">
+            <div className="mono text-xs tracking-[0.2em] text-[#3a3a3a] uppercase mb-4">The Difference</div>
+            <h2 className="font-bold text-white mb-5" style={{ fontSize: 'clamp(32px, 5vw, 48px)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
+              You Have the Strategy.{' '}
+              <span style={{ color: '#505050' }}>Lusentinel runs it.</span>
+            </h2>
+            <p className="text-base max-w-xl leading-relaxed" style={{ color: '#505050' }}>
+              The gap between conviction and execution costs you time and money. Lusentinel closes it permanently — an agent engine that decomposes strategies into ordered tasks, sources live data for each, and executes. Not a dashboard. Not a signal bot. An engine with a brain.
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {features.map((feature, i) => {
-              const Icon = feature.icon;
-              const isLime = feature.accent === 'lime';
+          <div className="grid md:grid-cols-2 gap-4">
+            {features.map((f, i) => {
+              const Icon = f.icon;
               return (
                 <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 30 }}
+                  key={f.title}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.15 }}
-                  className="group rounded-3xl bg-panel border border-border p-8 hover:border-cyan/30 transition-all hover:shadow-glow-cyan"
+                  transition={{ delay: i * 0.08 }}
+                  className="rounded-2xl bg-[#0f0f0f] border border-[rgba(255,255,255,0.06)] p-6 hover:border-[rgba(255,255,255,0.12)] transition-colors"
                 >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 ${
-                    isLime ? 'bg-lime/10 border border-lime/20' : 'bg-cyan/10 border border-cyan/20'
-                  }`}>
-                    <Icon size={22} className={isLime ? 'text-lime' : 'text-cyan'} />
+                  <div className="flex items-center gap-3 mb-3">
+                    <Icon size={16} className="text-[#606060]" />
+                    <h3 className="font-semibold text-white text-sm">{f.title}</h3>
                   </div>
-                  <h3 className="text-lg font-semibold text-light mb-3">{feature.title}</h3>
-                  <p className="text-sm text-muted leading-relaxed">{feature.description}</p>
+                  <p className="text-sm leading-relaxed" style={{ color: '#505050' }}>{f.body}</p>
                 </motion.div>
               );
             })}
@@ -220,30 +191,78 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ─── STATS ─── */}
+      <section className="py-20 px-6 border-t border-[rgba(255,255,255,0.05)]">
+        <div className="mx-auto max-w-4xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[rgba(255,255,255,0.05)]">
+            {stats.map((s, i) => (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-[#080808] p-8 text-center"
+              >
+                <div className="text-3xl font-bold text-white mb-1.5" style={{ letterSpacing: '-0.02em' }}>{s.value}</div>
+                <div className="text-xs text-[#404040]">{s.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── HOW IT WORKS ─── */}
       <section className="py-24 px-6">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
+          <div className="mono text-xs tracking-[0.2em] text-[#3a3a3a] uppercase mb-4 text-center">How It Works</div>
+          <h2 className="text-center font-bold text-white mb-16" style={{ fontSize: 'clamp(28px, 4vw, 40px)', letterSpacing: '-0.025em', lineHeight: 1.1 }}>
+            From intent to execution in milliseconds
+          </h2>
+
+          <div className="space-y-3">
+            {[
+              { step: '01', title: 'Define your strategy', desc: 'Write your intent in plain language or use the visual editor. The engine parses it into a structured execution plan automatically.' },
+              { step: '02', title: 'Agent chain assembles', desc: 'Sub-agents are assigned to each step based on task type. They share context and coordinate through the execution graph.' },
+              { step: '03', title: 'Live data sourced', desc: 'Each agent fetches the data it needs — chain state, market signals, social feeds — in parallel, reducing total latency.' },
+              { step: '04', title: 'Execute and commit', desc: 'Tasks execute in order with fallback chains ready. Every action is logged, traced, and committed to the audit trail.' },
+            ].map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, x: -16 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="flex gap-6 rounded-2xl bg-[#0f0f0f] border border-[rgba(255,255,255,0.06)] p-6 hover:border-[rgba(255,255,255,0.1)] transition-colors"
+              >
+                <div className="mono text-[#282828] font-bold text-2xl shrink-0 w-8">{item.step}</div>
+                <div>
+                  <h3 className="font-semibold text-white mb-1.5">{item.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: '#505050' }}>{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA ─── */}
+      <section className="py-24 px-6 border-t border-[rgba(255,255,255,0.05)]">
+        <div className="mx-auto max-w-2xl text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="glow-border-cyan rounded-3xl bg-panel p-12 text-center"
           >
-            <div className="inline-flex items-center gap-2 mb-6">
-              <Terminal size={18} className="text-cyan" />
-              <span className="text-xs font-mono text-cyan">ready to execute</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-light mb-4">
+            <h2 className="font-bold text-white mb-4" style={{ fontSize: 'clamp(28px, 4vw, 42px)', letterSpacing: '-0.025em', lineHeight: 1.1 }}>
               Start the simulation
             </h2>
-            <p className="text-muted mb-8 max-w-md mx-auto">
+            <p className="mb-8 text-base" style={{ color: '#505050' }}>
               Open the emulator and watch Sentinel agents execute in real time. No setup required.
             </p>
-            <Link
-              href="/emulator"
-              className="group inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-cyan text-base font-semibold hover:bg-cyan/90 transition-all shadow-glow-cyan"
-            >
+            <Link href="/emulator" className="btn-primary">
               Launch Emulator
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={15} />
             </Link>
           </motion.div>
         </div>
