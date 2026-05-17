@@ -87,7 +87,7 @@ export default function ContactPage() {
 
               <button type="submit" disabled={loading} className="btn-primary w-full justify-center mt-2" style={{ borderRadius: 12 }}>
                 {loading ? (
-                  <><div style={{ width: 14, height: 14, border: '2px solid rgba(0,0,0,0.2)', borderTopColor: '#000', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Sending...</>
+                  <><div className="animate-spin" style={{ width: 14, height: 14, border: '2px solid rgba(0,0,0,0.2)', borderTopColor: '#000', borderRadius: '50%' }} /> Sending...</>
                 ) : (
                   <><Send size={14} /> Send Message</>
                 )}

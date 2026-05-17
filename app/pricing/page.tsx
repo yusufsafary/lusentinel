@@ -104,7 +104,7 @@ export default function PricingPage() {
               <ul className="space-y-3 flex-1 mb-8">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: plan.highlight ? '#222' : '#606060' }}>
-                    <Check size={13} style={{ color: plan.highlight ? '#000' : '#404040', shrink: 0 }} />
+                    <Check size={13} style={{ color: plan.highlight ? '#000' : '#404040', flexShrink: 0 }} />
                     {f}
                   </li>
                 ))}
