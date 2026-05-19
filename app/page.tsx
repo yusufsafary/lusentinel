@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useInView, useMotionValue, useSpring, animate } from 'framer-motion';
+import { motion, animate } from 'framer-motion';
 import { ArrowRight, Layers, GitBranch, Eye, Zap, Shield, RefreshCw, ChevronRight } from 'lucide-react';
 import PartnerLogos from '@/components/PartnerLogos';
 import { useEffect, useRef, useState } from 'react';
@@ -10,37 +10,37 @@ const features = [
   {
     icon: Layers,
     title: 'Multi-Step Execution',
-    body: 'Complex, conditional strategies broken into ordered tasks — each handled by a specialist sub-agent. Plan, validate, execute.',
+    body: 'Complex strategies decomposed into ordered tasks, each handled by a specialist sub-agent. Plan, validate, execute without manual oversight.',
     accent: '#3B82F6',
   },
   {
     icon: Eye,
     title: 'Full Observability',
-    body: 'Every agent decision is logged, traced, and queryable. You see exactly what ran, when, and why — no black boxes.',
+    body: 'Every agent decision is logged, traced, and queryable. You see exactly what ran, when, and why. No black boxes. No surprises.',
     accent: '#8B5CF6',
   },
   {
     icon: GitBranch,
     title: 'Chain Orchestration',
-    body: 'Agents share context, resolve dependencies, and run parallel branches. The engine coordinates everything automatically.',
+    body: 'Agents share context, resolve dependencies, and run parallel branches. The engine coordinates everything automatically without human intervention.',
     accent: '#06B6D4',
   },
   {
     icon: RefreshCw,
     title: 'Deterministic Retry',
-    body: 'Built-in retry budgets, exponential backoff, and fallback chains. Every failure has a defined recovery path.',
+    body: 'Built-in retry budgets, exponential backoff, and fallback chains. Every failure has a defined recovery path with full audit visibility.',
     accent: '#10B981',
   },
   {
     icon: Zap,
     title: 'Sub-2ms Dispatch',
-    body: 'Engineered for low-latency scheduling. Agents receive tasks in under two milliseconds from trigger to execution.',
+    body: 'Engineered for low-latency scheduling. Agents receive tasks in under two milliseconds from trigger to first execution byte.',
     accent: '#F59E0B',
   },
   {
     icon: Shield,
     title: 'Execution Safety',
-    body: 'Input validation, output contracts, and sandboxed contexts. Each agent runs in a controlled, auditable scope.',
+    body: 'Input validation, output contracts, and sandboxed contexts. Each agent runs in a controlled, auditable scope with hard boundaries.',
     accent: '#EF4444',
   },
 ];
@@ -62,36 +62,41 @@ function fade(delay = 0) {
 
 function AnimatedCounter({ value, suffix = '', prefix = '' }: { value: number; suffix?: string; prefix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
+  const inViewRef = useRef(false);
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
-    if (!inView) return;
-    const controls = animate(0, value, {
-      duration: 1.8,
-      ease: [0.16, 1, 0.3, 1],
-      onUpdate(v) {
-        setDisplay(value % 1 !== 0 ? parseFloat(v.toFixed(2)) : Math.round(v));
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !inViewRef.current) {
+          inViewRef.current = true;
+          const controls = animate(0, value, {
+            duration: 1.8,
+            ease: [0.16, 1, 0.3, 1],
+            onUpdate(v) {
+              setDisplay(value % 1 !== 0 ? parseFloat(v.toFixed(2)) : Math.round(v));
+            },
+          });
+          return () => controls.stop();
+        }
       },
-    });
-    return () => controls.stop();
-  }, [inView, value]);
+      { rootMargin: '-80px' }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [value]);
 
-  return (
-    <span ref={ref}>
-      {prefix}{display}{suffix}
-    </span>
-  );
+  return <span ref={ref}>{prefix}{display}{suffix}</span>;
 }
 
 const terminalLines = [
-  { delay: 0, color: '#3B82F6', text: 'Parsing Intent: Multi-step Execution Strategy' },
-  { delay: 0.6, color: '#606060', text: 'Step 1: Scanning Base Chain (MC: $500k–$2M)...' },
-  { delay: 1.2, color: '#606060', text: 'Step 2: Fetching social sentiment scores...' },
-  { delay: 1.8, color: '#22c55e', text: 'Sentiment 84/100 — threshold met ✓' },
-  { delay: 2.4, color: '#F59E0B', text: 'Step 3: Executing buy order $5 ETH...' },
-  { delay: 3.0, color: '#22c55e', text: 'Order filled at 0.0021 ETH/token ✓' },
-  { delay: 3.5, color: '#22c55e', text: 'Strategy complete — audit log saved.' },
+  { delay: 0,   color: '#3B82F6', text: 'Parsing intent: multi-step execution strategy' },
+  { delay: 0.7, color: '#606060', text: 'Step 1: Scanning Base chain (MC $500k to $2M)...' },
+  { delay: 1.4, color: '#606060', text: 'Step 2: Fetching social sentiment scores...' },
+  { delay: 2.0, color: '#22c55e', text: 'Sentiment 84/100 — threshold met ✓' },
+  { delay: 2.6, color: '#F59E0B', text: 'Step 3: Executing buy order $5 ETH...' },
+  { delay: 3.2, color: '#22c55e', text: 'Order filled at 0.0021 ETH/token ✓' },
+  { delay: 3.8, color: '#22c55e', text: 'Strategy complete. Audit log committed.' },
 ];
 
 function AnimatedTerminal() {
@@ -105,9 +110,7 @@ function AnimatedTerminal() {
       terminalLines.forEach((line, i) => {
         timers.push(setTimeout(() => setVisibleLines(i + 1), line.delay * 1000));
       });
-      timers.push(setTimeout(() => {
-        setKey(k => k + 1);
-      }, 5500));
+      timers.push(setTimeout(() => setKey(k => k + 1), 6000));
     };
     run();
     return () => timers.forEach(clearTimeout);
@@ -128,7 +131,7 @@ function AnimatedTerminal() {
             </div>
           ))}
         </div>
-        <span className="badge bg-[rgba(34,197,94,0.1)] text-[#22c55e] border border-[rgba(34,197,94,0.2)]">
+        <span className="badge bg-[rgba(34,197,94,0.1)] text-[#22c55e] border border-[rgba(34,197,94,0.2)] text-[10px] px-2 py-0.5 rounded-full mono">
           EXECUTING
         </span>
       </div>
@@ -142,7 +145,7 @@ function AnimatedTerminal() {
         <div className="mb-5">
           <div className="mono text-[10px] text-[#383838] uppercase tracking-widest mb-2">User Prompt</div>
           <div className="rounded-xl bg-[#161616] border border-[rgba(255,255,255,0.06)] px-4 py-3 text-sm text-[#c0c0c0]">
-            Scan Base chain for tokens with $500k–$2M MC. Check social sentiment. If &gt;80/100, buy $5 ETH.
+            Scan Base chain for tokens with $500k to $2M MC. Check social sentiment. If above 80/100, buy $5 ETH.
           </div>
         </div>
 
@@ -154,7 +157,7 @@ function AnimatedTerminal() {
                 key={`${key}-${i}`}
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.22 }}
                 className="flex items-start gap-3"
               >
                 <div className="mt-1.5 shrink-0" style={{ width: 5, height: 5, borderRadius: '50%', background: line.color }} />
@@ -189,7 +192,7 @@ function FeatureCard({ f, i }: { f: typeof features[0]; i: number }) {
       className="rounded-2xl bg-[#0f0f0f] border border-[rgba(255,255,255,0.06)] p-6 transition-all duration-300 cursor-default relative overflow-hidden group"
       style={{
         borderColor: hovered ? `${f.accent}30` : undefined,
-        boxShadow: hovered ? `0 0 24px ${f.accent}12` : undefined,
+        boxShadow: hovered ? `0 0 28px ${f.accent}10` : undefined,
       }}
     >
       <div
@@ -205,10 +208,10 @@ function FeatureCard({ f, i }: { f: typeof features[0]; i: number }) {
         </div>
         <h3 className="font-semibold text-white text-sm">{f.title}</h3>
       </div>
-      <p className="text-sm leading-relaxed" style={{ color: '#505050' }}>{f.body}</p>
+      <p className="text-sm leading-relaxed text-justify" style={{ color: '#505050' }}>{f.body}</p>
       <motion.div
         className="flex items-center gap-1 mt-4 text-xs font-medium"
-        style={{ color: f.accent, opacity: hovered ? 1 : 0 }}
+        style={{ color: f.accent }}
         animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 4 }}
         transition={{ duration: 0.2 }}
       >
@@ -225,7 +228,7 @@ export default function HomePage() {
         background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.04) 0%, transparent 60%)'
       }} />
 
-      {/* ─── HERO ─── */}
+      {/* HERO */}
       <section className="relative z-10 pt-36 pb-16 px-6 text-center">
         <div className="mx-auto max-w-3xl">
           <motion.div {...fade(0)} className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-xs text-[#606060] mono">
@@ -239,7 +242,7 @@ export default function HomePage() {
             <span style={{ color: '#a0a0a0' }}>24/7.</span>
           </motion.h1>
 
-          <motion.p {...fade(0.18)} className="text-base md:text-lg mb-10 leading-relaxed mx-auto max-w-xl" style={{ color: '#606060' }}>
+          <motion.p {...fade(0.18)} className="text-base md:text-lg mb-10 leading-relaxed mx-auto max-w-xl text-justify" style={{ color: '#606060' }}>
             Lusentinel is the precision agent engine that decomposes complex strategies into ordered tasks, sources live data for each one, and executes with full auditability. Not a dashboard. Not a bot. An engine.
           </motion.p>
 
@@ -254,13 +257,8 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* Powered By — visible right after hero CTA */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          className="mb-12"
-        >
+        {/* Powered By — right below CTA */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.6 }} className="mb-14">
           <PartnerLogos />
         </motion.div>
 
@@ -275,17 +273,17 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ─── THE DIFFERENCE ─── */}
+      {/* THE DIFFERENCE */}
       <section className="py-24 px-6">
         <div className="mx-auto max-w-5xl">
           <div className="mb-16">
             <div className="mono text-xs tracking-[0.2em] text-[#3a3a3a] uppercase mb-4">The Difference</div>
             <h2 className="font-bold text-white mb-5" style={{ fontSize: 'clamp(32px, 5vw, 48px)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
-              You Have the Strategy.{' '}
+              You have the strategy.{' '}
               <span style={{ color: '#505050' }}>Lusentinel runs it.</span>
             </h2>
-            <p className="text-base max-w-xl leading-relaxed" style={{ color: '#505050' }}>
-              The gap between conviction and execution costs you time and money. Lusentinel closes it permanently — an agent engine that decomposes strategies into ordered tasks, sources live data for each, and executes. Not a dashboard. Not a signal bot. An engine with a brain.
+            <p className="text-base max-w-xl leading-relaxed text-justify" style={{ color: '#505050' }}>
+              The gap between conviction and execution costs real money. Lusentinel closes it permanently with an agent engine that decomposes strategies into ordered tasks, sources live data for each step, and executes without a human in the loop.
             </p>
           </div>
 
@@ -297,7 +295,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── STATS ─── */}
+      {/* STATS */}
       <section className="py-20 px-6 border-t border-[rgba(255,255,255,0.05)]">
         <div className="mx-auto max-w-4xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[rgba(255,255,255,0.05)]">
@@ -308,7 +306,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-[#080808] p-8 text-center group hover:bg-[#0d0d0d] transition-colors"
+                className="bg-[#080808] p-8 text-center hover:bg-[#0d0d0d] transition-colors"
               >
                 <div className="text-3xl font-bold text-white mb-1.5" style={{ letterSpacing: '-0.02em' }}>
                   <AnimatedCounter value={s.value} suffix={s.suffix} prefix={s.prefix} />
@@ -320,7 +318,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─── */}
+      {/* HOW IT WORKS */}
       <section className="py-24 px-6">
         <div className="mx-auto max-w-4xl">
           <div className="mono text-xs tracking-[0.2em] text-[#3a3a3a] uppercase mb-4 text-center">How It Works</div>
@@ -330,10 +328,10 @@ export default function HomePage() {
 
           <div className="space-y-3">
             {[
-              { step: '01', title: 'Define your strategy', desc: 'Write your intent in plain language or use the visual editor. The engine parses it into a structured execution plan automatically.' },
-              { step: '02', title: 'Agent chain assembles', desc: 'Sub-agents are assigned to each step based on task type. They share context and coordinate through the execution graph.' },
-              { step: '03', title: 'Live data sourced', desc: 'Each agent fetches the data it needs — chain state, market signals, social feeds — in parallel, reducing total latency.' },
-              { step: '04', title: 'Execute and commit', desc: 'Tasks execute in order with fallback chains ready. Every action is logged, traced, and committed to the audit trail.' },
+              { step: '01', title: 'Define your strategy', desc: 'Write your intent in plain language or use the visual editor. The engine parses it into a structured execution plan with ordered task nodes automatically.' },
+              { step: '02', title: 'Agent chain assembles', desc: 'Sub-agents are assigned to each step based on task type. They share context and coordinate through the execution graph without overlap or redundancy.' },
+              { step: '03', title: 'Live data sourced', desc: 'Each agent fetches exactly the data it needs in parallel: chain state, market signals, social feeds. This reduces total end-to-end latency dramatically.' },
+              { step: '04', title: 'Execute and commit', desc: 'Tasks execute in defined order with fallback chains on standby. Every action is logged, traced, and committed to an immutable audit trail.' },
             ].map((item, i) => (
               <motion.div
                 key={item.step}
@@ -346,7 +344,7 @@ export default function HomePage() {
                 <div className="mono text-[#282828] group-hover:text-[#383838] font-bold text-2xl shrink-0 w-8 transition-colors duration-300">{item.step}</div>
                 <div>
                   <h3 className="font-semibold text-white mb-1.5">{item.title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: '#505050' }}>{item.desc}</p>
+                  <p className="text-sm leading-relaxed text-justify" style={{ color: '#505050' }}>{item.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -354,7 +352,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── CTA ─── */}
+      {/* CTA */}
       <section className="py-24 px-6 border-t border-[rgba(255,255,255,0.05)]">
         <div className="mx-auto max-w-2xl text-center">
           <motion.div
@@ -365,8 +363,8 @@ export default function HomePage() {
             <h2 className="font-bold text-white mb-4" style={{ fontSize: 'clamp(28px, 4vw, 42px)', letterSpacing: '-0.025em', lineHeight: 1.1 }}>
               Start the simulation
             </h2>
-            <p className="mb-8 text-base" style={{ color: '#505050' }}>
-              Open the emulator and watch Sentinel agents execute in real time. No setup required.
+            <p className="mb-8 text-base text-justify max-w-md mx-auto" style={{ color: '#505050' }}>
+              Open the emulator and watch Sentinel agents execute your strategy in real time. No setup required. No wallet needed to start.
             </p>
             <Link href="/emulator" className="btn-primary">
               Launch Emulator
