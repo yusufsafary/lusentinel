@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, animate } from 'framer-motion';
-import { ArrowRight, Layers, GitBranch, Eye, Zap, Shield, RefreshCw, ChevronRight } from 'lucide-react';
+import { motion, animate, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Layers, GitBranch, Eye, Zap, Shield, RefreshCw, ChevronRight, Activity } from 'lucide-react';
 import PartnerLogos from '@/components/PartnerLogos';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 /* ─── Data ─── */
 const features = [
@@ -23,12 +23,130 @@ const stats = [
   { value: 128,   suffix: '',   label: 'Concurrent agents' },
 ];
 
-function fade(delay = 0) {
+/* ─── Live feed data ─── */
+const STRATEGIES = [
+  'Scan Base: MC $500k–$2M, sentiment > 80, buy $3 ETH',
+  'Monitor SOL trending tokens, entry if vol spike > 3x',
+  'Base chain arbitrage: DEX price delta > 0.8%',
+  'Polymarket: whale position tracker, alert on $50k+',
+  'Uniswap V3 liquidity rebalance on ETH/USDC pool',
+  'EigenLayer restaking yield optimizer, weekly claim',
+  'Sentiment scan: CT mentions of $WIF up 200% in 2h',
+  'Jupiter route: best swap path SOL to USDC < 0.1% slippage',
+  'Base memecoin scan: deployer age < 7 days, LP locked',
+  'Chainlink oracle deviation alert: ETH price > 1%',
+];
+const CHAINS = ['Base', 'Solana', 'Ethereum', 'Arbitrum', 'Optimism'];
+const STATUSES: { label: string; color: string; bg: string }[] = [
+  { label: 'EXECUTING', color: '#3B82F6', bg: 'rgba(59,130,246,0.1)' },
+  { label: 'SCANNING',  color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
+  { label: 'COMPLETE',  color: '#22c55e', bg: 'rgba(34,197,94,0.1)'  },
+  { label: 'ANALYZING', color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)' },
+];
+
+interface FeedItem {
+  id: number;
+  strategy: string;
+  chain: string;
+  status: typeof STATUSES[0];
+  elapsed: string;
+  agent: string;
+}
+
+const AGENTS = ['agent-0x1a', 'agent-0x2f', 'agent-0x3c', 'agent-0x4b', 'agent-0x5e', 'agent-0x6d'];
+
+function randomItem<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+function randomElapsed() {
+  const v = Math.floor(Math.random() * 12) + 1;
+  return v < 2 ? `${v * 800 + Math.floor(Math.random() * 200)}ms` : `${v}s`;
+}
+function makeFeedItem(id: number): FeedItem {
   return {
-    initial: { opacity: 0, y: 24 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.55, delay, ease: [0.25, 0.1, 0.25, 1] },
+    id,
+    strategy: randomItem(STRATEGIES),
+    chain: randomItem(CHAINS),
+    status: randomItem(STATUSES),
+    elapsed: randomElapsed(),
+    agent: randomItem(AGENTS),
   };
+}
+
+function LiveAgentFeed() {
+  const [items, setItems] = useState<FeedItem[]>(() =>
+    Array.from({ length: 5 }, (_, i) => makeFeedItem(i))
+  );
+  const [count, setCount] = useState(5);
+  const counterRef = useRef(count);
+  counterRef.current = count;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newId = counterRef.current + 1;
+      setCount(newId);
+      setItems(prev => [makeFeedItem(newId), ...prev.slice(0, 4)]);
+    }, 2400);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <section className="py-24 px-6 border-t border-[rgba(255,255,255,0.05)]">
+      <div className="mx-auto max-w-5xl">
+        <div className="flex items-center justify-between mb-12">
+          <div>
+            <div className="mono text-xs tracking-[0.2em] text-[#3a3a3a] uppercase mb-3">Live Activity</div>
+            <h2 className="font-bold text-white" style={{ fontSize: 'clamp(28px, 4vw, 40px)', letterSpacing: '-0.025em', lineHeight: 1.1 }}>
+              Agents running right now
+            </h2>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.05)]">
+            <div className="glow-dot" style={{ width: 5, height: 5 }} />
+            <span className="text-xs text-[#22c55e] mono">LIVE</span>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <AnimatePresence initial={false}>
+            {items.map((item) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: -16, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                className="flex items-center gap-4 rounded-xl bg-[#0d0d0d] border border-[rgba(255,255,255,0.05)] px-5 py-4 hover:border-[rgba(255,255,255,0.1)] transition-colors"
+              >
+                {/* Status badge */}
+                <span
+                  className="shrink-0 mono text-[9px] font-bold px-2 py-1 rounded-md tracking-widest"
+                  style={{ color: item.status.color, background: item.status.bg }}
+                >
+                  {item.status.label}
+                </span>
+
+                {/* Strategy */}
+                <p className="flex-1 text-sm text-[#707070] truncate">{item.strategy}</p>
+
+                {/* Meta */}
+                <div className="hidden md:flex items-center gap-4 shrink-0">
+                  <span className="mono text-[10px] text-[#383838] border border-[rgba(255,255,255,0.05)] px-2 py-0.5 rounded">
+                    {item.chain}
+                  </span>
+                  <span className="mono text-[10px] text-[#303030]">{item.agent}</span>
+                  <span className="mono text-[10px] text-[#303030]">{item.elapsed}</span>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        <div className="mt-8 text-center">
+          <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-[#505050] hover:text-white transition-colors">
+            View full execution dashboard <ChevronRight size={14} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 /* ─── Animated counter ─── */
@@ -36,14 +154,12 @@ function AnimatedCounter({ value, suffix = '', prefix = '' }: { value: number; s
   const ref = useRef<HTMLSpanElement>(null);
   const fired = useRef(false);
   const [display, setDisplay] = useState(0);
-
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !fired.current) {
         fired.current = true;
         const ctrl = animate(0, value, {
-          duration: 1.8,
-          ease: [0.16, 1, 0.3, 1],
+          duration: 1.8, ease: [0.16, 1, 0.3, 1],
           onUpdate(v) { setDisplay(value % 1 !== 0 ? parseFloat(v.toFixed(2)) : Math.round(v)); },
         });
         return () => ctrl.stop();
@@ -52,57 +168,30 @@ function AnimatedCounter({ value, suffix = '', prefix = '' }: { value: number; s
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, [value]);
-
   return <span ref={ref}>{prefix}{display}{suffix}</span>;
 }
 
-/* ─── Spinning SENTINEL circle ─── */
+/* ─── Spinning SENTINEL orbit ─── */
 function SentinelOrbit() {
-  const ringText = 'LUSENTINEL · PRECISION AGENT ENGINE · BUILT FOR EXECUTION · ';
-
+  const ring = 'LUSENTINEL · PRECISION AGENT ENGINE · BUILT FOR EXECUTION · ';
   return (
     <div className="relative flex items-center justify-center mx-auto" style={{ width: 260, height: 260 }}>
-      {/* Outer faint ring */}
-      <div
-        className="absolute inset-0 rounded-full border border-[rgba(255,255,255,0.04)]"
-        style={{ margin: 8 }}
-      />
-
-      {/* Spinning text ring */}
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
-      >
+      <div className="absolute inset-0 rounded-full border border-[rgba(255,255,255,0.04)]" style={{ margin: 8 }} />
+      <motion.div className="absolute inset-0 flex items-center justify-center"
+        animate={{ rotate: 360 }} transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}>
         <svg width="260" height="260" viewBox="0 0 260 260">
           <defs>
-            <path
-              id="sentinel-orbit-path"
-              d="M130,130 m-110,0 a110,110 0 1,1 220,0 a110,110 0 1,1 -220,0"
-            />
+            <path id="orbit-ring" d="M130,130 m-110,0 a110,110 0 1,1 220,0 a110,110 0 1,1 -220,0" />
           </defs>
-          <text
-            fill="rgba(255,255,255,0.22)"
-            fontSize="9"
-            fontFamily="'JetBrains Mono','Fira Code','Courier New',monospace"
-            letterSpacing="3.5"
-          >
-            <textPath href="#sentinel-orbit-path">{ringText}{ringText}</textPath>
+          <text fill="rgba(255,255,255,0.22)" fontSize="9" fontFamily="'JetBrains Mono','Fira Code',monospace" letterSpacing="3.5">
+            <textPath href="#orbit-ring">{ring}{ring}</textPath>
           </text>
         </svg>
       </motion.div>
-
-      {/* Center content */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
+      <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-        className="relative z-10 text-center"
-      >
-        <div
-          className="font-bold text-white tracking-[-0.04em] leading-none select-none"
-          style={{ fontSize: 30 }}
-        >
+        className="relative z-10 text-center">
+        <div className="font-bold text-white tracking-[-0.04em] leading-none select-none" style={{ fontSize: 30 }}>
           SENTINEL
         </div>
         <div className="flex items-center justify-center gap-1.5 mt-2.5">
@@ -115,7 +204,7 @@ function SentinelOrbit() {
   );
 }
 
-/* ─── Live terminal ─── */
+/* ─── Terminal ─── */
 const terminalLines = [
   { delay: 0,   color: '#3B82F6', text: 'Parsing intent: multi-step execution strategy' },
   { delay: 0.7, color: '#606060', text: 'Step 1: Scanning Base chain (MC $500k to $2M)...' },
@@ -129,7 +218,6 @@ const terminalLines = [
 function AnimatedTerminal() {
   const [visible, setVisible] = useState(0);
   const [key, setKey] = useState(0);
-
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
     const run = () => {
@@ -151,14 +239,10 @@ function AnimatedTerminal() {
             <svg key="c" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>,
             <svg key="g" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
           ].map((icon, i) => (
-            <div key={i} className={`p-1.5 rounded-md ${i === 0 ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-[#404040] hover:text-[#707070]'} transition-colors cursor-pointer`}>
-              {icon}
-            </div>
+            <div key={i} className={`p-1.5 rounded-md ${i === 0 ? 'text-white bg-[rgba(255,255,255,0.08)]' : 'text-[#404040] hover:text-[#707070]'} transition-colors cursor-pointer`}>{icon}</div>
           ))}
         </div>
-        <span className="mono text-[10px] px-2 py-0.5 rounded-full bg-[rgba(34,197,94,0.1)] text-[#22c55e] border border-[rgba(34,197,94,0.2)]">
-          EXECUTING
-        </span>
+        <span className="mono text-[10px] px-2 py-0.5 rounded-full bg-[rgba(34,197,94,0.1)] text-[#22c55e] border border-[rgba(34,197,94,0.2)]">EXECUTING</span>
       </div>
       <div className="p-5 text-left min-h-[255px]">
         <div className="flex items-center gap-2 mb-5">
@@ -207,8 +291,7 @@ function FeatureCard({ f, i }: { f: typeof features[0]; i: number }) {
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
         style={{ background: `radial-gradient(circle at 30% 40%, ${f.accent}08 0%, transparent 70%)` }} />
       <div className="flex items-center gap-3 mb-3">
-        <div className="p-2 rounded-lg transition-all duration-300"
-          style={{ background: hovered ? `${f.accent}15` : 'rgba(255,255,255,0.04)' }}>
+        <div className="p-2 rounded-lg transition-all duration-300" style={{ background: hovered ? `${f.accent}15` : 'rgba(255,255,255,0.04)' }}>
           <Icon size={15} style={{ color: hovered ? f.accent : '#606060', transition: 'color 0.3s' }} />
         </div>
         <h3 className="font-semibold text-white text-sm">{f.title}</h3>
@@ -229,28 +312,40 @@ export default function HomePage() {
       <div className="pointer-events-none fixed inset-0 z-0"
         style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.04) 0%, transparent 60%)' }} />
 
-      {/* HERO */}
-      {/* pt accounts for: XBanner(36px) + Navbar(64px) + breathing room */}
-      <section className="relative z-10 pt-48 pb-16 px-6 text-center">
-        <div className="mx-auto max-w-3xl">
+      {/* POWERED BY — very top of page content, right below header */}
+      <div className="relative z-10" style={{ paddingTop: 100 }}>
+        <PartnerLogos />
+      </div>
 
-          {/* Spinning SENTINEL orbit */}
-          <motion.div {...fade(0)} className="flex justify-center mb-10">
+      {/* HERO */}
+      <section className="relative z-10 pt-20 pb-16 px-6 text-center">
+        <div className="mx-auto max-w-3xl">
+          <motion.div className="flex justify-center mb-10"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.1 }}>
             <SentinelOrbit />
           </motion.div>
 
-          <motion.h1 {...fade(0.15)} className="font-bold text-white mb-6"
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
+            className="font-bold text-white mb-6"
             style={{ fontSize: 'clamp(40px, 7.5vw, 68px)', lineHeight: 1.06, letterSpacing: '-0.03em' }}>
             Your Strategy.{' '}
             <span style={{ color: '#505050' }}>Running</span>{' '}
             <span style={{ color: '#a0a0a0' }}>24/7.</span>
           </motion.h1>
 
-          <motion.p {...fade(0.22)} className="text-base md:text-lg mb-10 leading-relaxed mx-auto max-w-xl text-justify" style={{ color: '#606060' }}>
+          <motion.p
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-base md:text-lg mb-10 leading-relaxed mx-auto max-w-xl text-justify" style={{ color: '#606060' }}>
             Lusentinel is the precision agent engine that decomposes complex strategies into ordered tasks, sources live data for each one, and executes with full auditability. Not a dashboard. Not a bot. An engine.
           </motion.p>
 
-          <motion.div {...fade(0.3)} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14">
             <Link href="/emulator" className="btn-primary">
               Deploy Your Strategy <ArrowRight size={15} />
             </Link>
@@ -258,22 +353,19 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* Powered By — right below CTA */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.6 }} className="mb-14">
-          <PartnerLogos />
-        </motion.div>
-
-        {/* Animated Terminal */}
+        {/* Terminal */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.55 }}
-          className="mx-auto max-w-2xl float"
-        >
+          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4 }}
+          className="mx-auto max-w-2xl float">
           <AnimatedTerminal />
         </motion.div>
       </section>
 
+      {/* LIVE AGENT FEED */}
+      <LiveAgentFeed />
+
       {/* THE DIFFERENCE */}
-      <section className="py-24 px-6">
+      <section className="py-24 px-6 border-t border-[rgba(255,255,255,0.05)]">
         <div className="mx-auto max-w-5xl">
           <div className="mb-16">
             <div className="mono text-xs tracking-[0.2em] text-[#3a3a3a] uppercase mb-4">The Difference</div>
@@ -323,7 +415,7 @@ export default function HomePage() {
             ].map((item, i) => (
               <motion.div key={item.step} initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 className="flex gap-6 rounded-2xl bg-[#0f0f0f] border border-[rgba(255,255,255,0.06)] p-6 hover:border-[rgba(255,255,255,0.1)] hover:bg-[#111] transition-all duration-300 group cursor-default">
-                <div className="mono text-[#282828] group-hover:text-[#383838] font-bold text-2xl shrink-0 w-8 transition-colors duration-300">{item.step}</div>
+                <div className="mono text-[#282828] group-hover:text-[#383838] font-bold text-2xl shrink-0 w-8 transition-colors">{item.step}</div>
                 <div>
                   <h3 className="font-semibold text-white mb-1.5">{item.title}</h3>
                   <p className="text-sm leading-relaxed text-justify" style={{ color: '#505050' }}>{item.desc}</p>
